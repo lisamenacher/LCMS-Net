@@ -1,4 +1,4 @@
-# LCMS-Net: Deep learning for cause-of-death prediction
+# LCMS-Net: Deep learning for cause-of-death screening
 
 ## Overview
 
