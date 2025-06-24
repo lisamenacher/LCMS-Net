@@ -39,7 +39,6 @@ def get_reject_threshold(model, data, y_true, min_sensitivitiy=0.3, min_specific
 
     # get ground truth
     y_true = np.argmax(y_true, axis=1)
-    labels = [1 if x == i else 0 for x in y_true]
 
     # create list with possible thresholds
     possible_thrs = np.linspace(0, 0.5, num=50)
@@ -57,6 +56,9 @@ def get_reject_threshold(model, data, y_true, min_sensitivitiy=0.3, min_specific
             
         # evaluate results based on current threshold
         for i in range(len(np.unique(y_true))):
+
+            labels = [1 if x == i else 0 for x in y_true]
+
             temp_pred = [1 if x == i else 0 for x in curr_pred]
                 
             f1_scores.append(f1_score(labels, temp_pred, average="binary"))
@@ -67,15 +69,15 @@ def get_reject_threshold(model, data, y_true, min_sensitivitiy=0.3, min_specific
             roc_scores.append(roc_auc_score(labels, temp_pred))
 
         dict = {'F1-Score': f1_scores, 'Accuracy': accuracies, 'Precision': precisions, "Recall": recalls, "Specificity": specificities, "AUROC": roc_scores}
-        class_metrics = pd.DataFrame(dict, index=pd.Index(["Acidosis", "Drug", "Hanging", "IHD", "Pneumonia"]))
+        class_metrics = pd.DataFrame(dict)
 
         # save as best, if better than previous best specificity and within boundaries
-        if (class_metrics["Recall"]>=min_sensitivitiy).all() & (class_metrics["Specificity"]>=min_specificity).all() & (best_specificty < (class_metrics["Specificity"].sum()/5)) & ((np.unique(curr_pred, return_counts=True)[1][0]/len(curr_pred)) <= 0.35):
+        if (class_metrics["Recall"]>=min_sensitivitiy).all() & (class_metrics["Specificity"]>=min_specificity).all() & (best_specificty < (class_metrics["Specificity"].sum()/len(np.unique(y_true)))) & ((np.unique(curr_pred, return_counts=True)[1][0]/len(curr_pred)) <= 0.35):
             best_thr = thr
-            best_specificty = class_metrics["Specificity"].sum()/5
+            best_specificty = class_metrics["Specificity"].sum()/len(np.unique(y_true))
 
-        store_specificities.append(class_metrics["Specificity"].sum()/5)
-        store_f1_scores.append(class_metrics["F1-Score"].sum()/5)
+        store_specificities.append(class_metrics["Specificity"].sum()/len(np.unique(y_true)))
+        store_f1_scores.append(class_metrics["F1-Score"].sum()/len(np.unique(y_true)))
         store_unclassified.append(np.unique(curr_pred, return_counts=True)[1][0]/len(curr_pred))
 
     res = pd.DataFrame({"Threshold": possible_thrs, "F1-Score": store_f1_scores, "Specificity": store_specificities, "Unclassified": store_unclassified})
@@ -109,13 +111,13 @@ def predict_with_reject(probs, thr=0.20):
     return np.array(predicted_labels)
 
 
-def eval(model, data, labels, model_name="CNN_train", save_path="./Baseline Models/results", with_reject=False):
+def eval(model, data, labels, display_labels=["Group 1", "Group 2"], model_name="CNN_train", save_path="./Baseline Models/results", with_reject=False):
     """ Evaluate classification results with various metrics.
-
     Parameter: \\
     model (keras model):        Fitted keras model \\
     data (np.array):            Array of processed LC-MS data or Generator object that produces data \\
     labels (np.array):          Array of class labels \\
+    display_labels (list):      List of class label names for display\\
     model_name (str):           Name of current run, will be used to save results \\
     save_path (str):            Path to directory where results will be stored \\
     with_reject (bool):         Use reject option for prediction
@@ -129,13 +131,12 @@ def eval(model, data, labels, model_name="CNN_train", save_path="./Baseline Mode
     class_labels = None
     if with_reject:
         y_pred = predict_with_reject(y_probs)
-        class_labels = [ 0, 1, 2, 3, 4, -1]
-        display_labels = ["Acidosis", "Drug", "Hanging", "IHD", "Pneumonia", "Unclassified"]
+        class_labels = list(range(len(display_labels)))
+        class_labels.append(-1)
+        display_labels.append("Unclassified")
     else:
         y_pred = np.argmax(y_probs, axis=1)
-        class_labels = [0, 1, 2, 3, 4]
-        display_labels = ["Acidosis", "Drug", "Hanging", "IHD", "Pneumonia"]
-    
+        class_labels = list(range(len(display_labels)))   
 
     # get ground truth
     y_true = np.argmax(labels, axis=1)

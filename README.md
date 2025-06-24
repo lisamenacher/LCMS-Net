@@ -25,10 +25,26 @@ Software versions:
 - pyOpenMS 3.2
 - TensorFlow 2.18.1
 
-Use (should take less than x minutes):
+Use (should take less than 10 minutes):
 ```
 conda env create --name lcms_net --file=environment.yml
 ```
+
+## Demo
+
+To train LCMS-Net with the provided example data (randomly sampled from two normal distributions), run the following code (should take approx. 5 min):
+
+```
+python ./LCMS-Net/training.py
+```
+
+For evaluation of a already trained model, run the following code (should take approx. 1 min):
+```
+python ./LCMS-Net/evaluation.py -eval default
+```
+(Note you can also chose "default_with_reject" or "best_reject" as value for the variable `eval` to run different types of evaluation)
+
+The example data should given a test accuracy of 100%.
 
 ## Licence
 

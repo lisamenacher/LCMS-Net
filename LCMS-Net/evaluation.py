@@ -17,17 +17,14 @@ def args_setting():
     """
 
     parser = argparse.ArgumentParser(description='ArgUtils')
-    parser.add_argument('-meta', type=str, dest='meta_filepath', default='./meta_test.xlsx')
-    parser.add_argument('-data', type=list, dest='raw_folderpaths', default=[
-            "./Other/data/acidosis_adaptive",
-            "./Other/data/drug_adaptive",
-            "./Other/data/hanging_adaptive",
-            "./Other/data/ihd_adaptive",
-            "./Other/data/pneumonia_adaptive"])
+    parser.add_argument('-meta', type=str, dest='meta_filepath', default='./Example Data/meta.xlsx')
+    parser.add_argument('-data', type=list, dest='raw_folderpaths', default=["./Example Data"])
     parser.add_argument('-test_samples', type=str, dest='sample_path', default=None)
-    parser.add_argument('-models', type=str, dest='model_dir', default='./CNN/results/final_ensemble/Run 5')
-    parser.add_argument('-save', dest='save_path', default='./CNN/results/final_ensemble/Run 5')
+    parser.add_argument('-models', type=str, dest='model_dir', default='./LCMS-Net/results')
+    parser.add_argument('-save', dest='save_path', default='./LCMS-Net/results')
     parser.add_argument('-mode', type=str, dest='mode', default='ensemble')
+    parser.add_argument('-eval', type=str, dest='eval', default='default')
+
     args = parser.parse_args()
 
     return args
@@ -42,6 +39,7 @@ def main():
     model_dir = args.model_dir
     save_path = args.save_path
     mode = args.mode
+    eval = args.eval
 
     # load training arguments
     batch_size = 4
@@ -83,7 +81,15 @@ def main():
         raise ValueError("mode must be ensemble or single")
 
     # predict samples and evaluate performance
-    utils.eval(model, test_dataset, np.concatenate([y for x, y in test_dataset], axis=0), "CNN_test", save_path, False)
+    if eval == "default":
+        utils.eval(model, test_dataset, np.concatenate([y for x, y in test_dataset], axis=0), class_list, "CNN_test", save_path, False)
+    elif eval == "default_with_reject":
+        utils.eval(model, test_dataset, np.concatenate([y for x, y in test_dataset], axis=0), class_list, "CNN_test_with_reject", save_path, True)
+    elif eval == "best_reject":
+        utils.get_reject_threshold(model, test_dataset, np.concatenate([y for x, y in test_dataset], axis=0), save_path=save_path)
+    elif eval == "ensemble_impact":
+        utils.eval_ensemble(model, test_dataset, np.concatenate([y for x, y in test_dataset], axis=0), save_path=save_path, max_members=25)
+
 
 
 if __name__ == '__main__':

@@ -20,10 +20,8 @@ def args_setting():
     """
 
     parser = argparse.ArgumentParser(description='ArgUtils')
-    parser.add_argument('-meta', type=str, dest='meta_filepath', default='../Other/DeepMSProfiler Data/meta/meta_train_prostate.xlsx')
-    parser.add_argument('-data', type=list, dest='raw_folderpaths', default=[
-        "../Other/DeepMSProfiler Data/prostate",
-    ])
+    parser.add_argument('-meta', type=str, dest='meta_filepath', default='./LCMS-Net/meta.xlsx')
+    parser.add_argument('-data', type=list, dest='raw_folderpaths', default=["./LCMS-Net"])
     parser.add_argument('-batch', type=int, dest='batch_size', default=4)
     parser.add_argument('-epoch', type=int, dest='epoch', default=200)
     parser.add_argument('-save', type=str, dest='save_dir', default='./results')
@@ -71,7 +69,7 @@ def main():
         max_trials=100,
         max_consecutive_failed_trials=5)
     
-    early_stopping = EarlyStopping(monitor='val_f1_score', patience=10, start_from_epoch=5)
+    early_stopping = EarlyStopping(monitor='val_f1_score', patience=10, start_from_epoch=3)
     lr_schedule = ReduceLROnPlateau(monitor='val_f1_score', factor=0.5, patience=3, verbose=1, min_lr=0.0000001)
     tuner.search(
         train_dataset,
@@ -86,13 +84,12 @@ def main():
     best_hyperparameters = tuner.get_best_hyperparameters(1)[0]
 
     if args.save_dir is not None:
-        model_savedir = os.path.join(args.save_dir, f"hyperparam_search/prostate_cancer")
+        model_savedir = os.path.join(args.save_dir, f"hyperparam_search")
         if not os.path.exists(model_savedir):
             os.makedirs(model_savedir)
 
-        utils.eval_metrics(model, train_dataset, np.concatenate([y for x, y in train_dataset], axis=0), "CNN_train", model_savedir)
-
-        utils.eval_metrics(model, val_dataset, np.concatenate([y for x, y in val_dataset], axis=0), "CNN_valid", model_savedir)
+            utils.eval(model, train_dataset, np.concatenate([y for x, y in train_dataset], axis=0), np.unique(meta["Group"]), "CNN_train", model_savedir)
+            utils.eval(model, val_dataset, np.concatenate([y for x, y in val_dataset], axis=0), np.unique(meta["Group"]), "CNN_val", model_savedir)
 
         args_path = os.path.join(model_savedir, 'args.txt')
         args_df.to_csv(args_path, index=False, sep='\t')

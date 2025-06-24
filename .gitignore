@@ -27,5 +27,5 @@ data.ipynb
 /Other/
 *hyperparameter_tuning_all.py
 /Baseline Models/raw_data
-
+.gitignore
 *__pycache__*

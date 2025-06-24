@@ -27,20 +27,15 @@ def args_setting():
     """
 
     parser = argparse.ArgumentParser(description='ArgUtils')
-    parser.add_argument('-meta', type=str, dest='meta_filepath', default='./meta_train.xlsx')
-    parser.add_argument('-data', type=list, dest='raw_folderpaths', default=[
-            "./Other/data/acidosis_adaptive",
-            "./Other/data/drug_adaptive",
-            "./Other/data/hanging_adaptive",
-            "./Other/data/ihd_adaptive",
-            "./Other/data/pneumonia_adaptive"])
-    parser.add_argument('-handleImbalance', type=str, dest='handle_imbalance', default=None)
-    parser.add_argument('-norm', type=bool, dest='use_norm', default=False)
-    parser.add_argument('-aug', type=bool, dest='use_aug', default=False)
+    parser.add_argument('-meta', type=str, dest='meta_filepath', default='./Example Data/meta.xlsx')
+    parser.add_argument('-data', type=list, dest='raw_folderpaths', default=["./Example Data",])
+    parser.add_argument('-handleImbalance', type=str, dest='handle_imbalance', default="ros")
+    parser.add_argument('-norm', type=bool, dest='use_norm', default=True)
+    parser.add_argument('-aug', type=bool, dest='use_aug', default=True)
     parser.add_argument('-lr', type=float, dest='lr', default=0.0001)
     parser.add_argument('-batch', type=int, dest='batch_size', default=4)
     parser.add_argument('-epoch', type=int, dest='epoch', default=200)
-    parser.add_argument('-save', type=str, dest='save_dir', default='./CNN/results/')
+    parser.add_argument('-save', type=str, dest='save_dir', default='./LCMS-Net/results/')
     args = parser.parse_args()
     
     return args
@@ -128,14 +123,14 @@ def main():
                 load_data.data_gen, 
                 args=(raw_folderpaths, meta_filepath, samples_train, use_norm, use_aug), 
                 output_signature=(tf.TensorSpec(shape=input_shape, dtype=tf.float64), tf.TensorSpec(shape=(num_classes,), dtype=tf.int32)))
-            train_dataset = train_dataset.batch(batch_size, drop_remainder=False).prefetch(3).cache( "../../vault/lisme75_vr-murderai/3. Projects - IDA/Cause of Death - Lisa/data/train.cache")
+            train_dataset = train_dataset.batch(batch_size, drop_remainder=False).prefetch(3)
 
         # create and compile model
         model = create_model.create_model(input_shape=input_shape, classes=len(np.unique(meta["Group"])))
         model = create_model.compile_model(model, lr=lr)
 
         # fit model
-        early_stopping = EarlyStopping(monitor='val_f1_score', patience=2, start_from_epoch=1, restore_best_weights=True, mode='max')
+        early_stopping = EarlyStopping(monitor='val_f1_score', patience=10, start_from_epoch=3, restore_best_weights=True, mode='max')
         lr_schedule = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, verbose=1, min_lr=0.0000001)
         history = model.fit(train_dataset, batch_size=batch_size, epochs=epochs, validation_data=val_dataset, callbacks=[lr_schedule, early_stopping], verbose=1, class_weight=class_weights) 
         run_log = get_run_log(history)
@@ -176,8 +171,8 @@ def main():
             plt.savefig(model_savedir + "/f1_score.png")
             plt.close()
 
-            # utils.eval(model, train_dataset, np.concatenate([y for x, y in train_dataset], axis=0), "CNN_train", model_savedir)
-            utils.eval(model, val_dataset, np.concatenate([y for x, y in val_dataset], axis=0), "CNN_val", model_savedir)
+            utils.eval(model, train_dataset, np.concatenate([y for x, y in train_dataset], axis=0), np.unique(meta["Group"]), "CNN_train", model_savedir)
+            utils.eval(model, val_dataset, np.concatenate([y for x, y in val_dataset], axis=0), np.unique(meta["Group"]), "CNN_val", model_savedir)
 
             # save model
             model_path = os.path.join(model_savedir, 'model.h5')
