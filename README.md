@@ -6,9 +6,29 @@ Current preprocessing workflows for untargeted metabolomics using liquid chromat
 
 ![alt text](https://github.com/lisamenacher/DL_for_CoD_Prediction/blob/main/Fig_1.png)
 
-## Usage
+## System Requirements & Installation
 
-Use the environment.yml file to install the conda environment for LCMS-Net (tested on Linux).
+Please make sure that you meet all system requirements before proceeding.
+
+### Hardware 
+
+LCMS-Net was tested on a Linux (RedHat 8) system with a 4 core CPU, 128GB RAM, and a RTX 4070 12GB GPU. Running the code on a standard desktop computer with sufficient RAM is also possible.
+
+### Software
+
+Clone the the GitHub repository and use the environment.yml file to install the needed conda environment for LCMS-Net. All used software versions can also be retrieved from the environment.yml file.
+
+Software versions:
+Python 3.12.7
+scikit-lean 1.5.1
+scikit-optimize 0.10.2
+pyOpenMS 3.2
+TensorFlow 2.18.1
+
+Use:
+```
+conda env create --name lcms_net --file=environment.yml
+```
 
 ## Licence
 
