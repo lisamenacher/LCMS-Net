@@ -19,13 +19,13 @@ LCMS-Net was tested on a Linux (RedHat 8) system with a 4 core CPU, 128GB RAM, a
 Clone the the GitHub repository and use the environment.yml file to install the needed conda environment for LCMS-Net. All used software versions can also be retrieved from the environment.yml file.
 
 Software versions:
-Python 3.12.7
-scikit-lean 1.5.1
-scikit-optimize 0.10.2
-pyOpenMS 3.2
-TensorFlow 2.18.1
+- Python 3.12.7
+- scikit-lean 1.5.1
+- scikit-optimize 0.10.2
+- pyOpenMS 3.2
+- TensorFlow 2.18.1
 
-Use:
+Use (should take less than x minutes):
 ```
 conda env create --name lcms_net --file=environment.yml
 ```
