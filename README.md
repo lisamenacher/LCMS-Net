@@ -22,11 +22,11 @@ Software versions:
 - Python 3.12.7
 - scikit-lean 1.5.1
 - scikit-optimize 0.10.2
-- imbalanced-learn=0.12.3
+- imbalanced-learn 0.12.3
 - pyOpenMS 3.2
 - TensorFlow 2.18.1
-- keras-tuner==1.4.7
-- keras==3.6.0
+- keras-tuner 1.4.7
+- keras 3.6.0
 (additionally install numpy, pandas, matplotlib, & openpyxl)
 
 Use the following command to install the provided conda environment (should take less than 10 minutes):
